@@ -1,0 +1,81 @@
+Functional Dependencies:
+Employee: 
+EmployeeID(PK)  FirstName, LastName, EmployeeAddress, EmployeeSalary, PositionID(FK), SkillsID(FK), DepartmentID(FK)
+
+Product: 
+ProductID(PK)  ProductName
+
+Skills:
+SkillsID(PK)  SkillsName
+
+Department：
+DepartmentID(PK)  DepartmentName
+
+Purchase: 
+PurchaseID(PK)  EmployeeID(FK), ProductID(FK), CustomerName, ProductID(FK), PurchasePrice, PurchaseDate, DeliveryDate, ProductInventory
+
+
+Relationships and Cardinalities:
+
+1. Employee can make purchase. An employee can make many purchases, and each purchase item can only correspond to one employee
+Employee - Purchase (1: M):
+Foreign Key: Purchase.EmployeeID → Employee.EmployeeID
+
+
+2. An employee can have many skills
+Employee - Skills (1: M):
+Foreign Key: Employee.SkillsID → Skills.SkillsID
+
+
+3. A product can be purchased many times; 
+Product -- Purchase (1 : M)
+Foreign Key: Purchase.ProductID → Product.ProductID
+
+
+4. A position can have many employees
+Position – Employee (1 : M)
+Position.PositionID → Employee.PositionID
+
+5. An employee must belong to a department, but an employee can belongs to more than 1 department
+Employee – Department (M : M)
+Employee.DepartmentID → Department.DepartmentID
+
+Transformation Decision
+
+Entity/RelationShip	Table / RelationShip	Example Explanation
+Employee	Employee	Employee entity transformed to Employee table
+Employee - position	Empolyee -Position	Employee – Position entity relationship transformed to Empolyee -Position table relationship
+Employee - Skills	Employee - Skills	Employee – Skills entity relationship transformed to Employee – Skills table relationship
+Employee - Department	Employee - Department	Employee – Department entity relationship transformed to Employee – Department table relationship
+Purchase	Purchase	Purchase entity transformed to Purchase table
+Purchase - product	Purchase - product	Purchase – product entity relationship transformed to Purchase – product table relationship
+
+
+Table Characteristics
+
+Table	Field	Key	Not NULL	Default	DataType (SQL)	DataType(Oracle)	DataType(MySQL)
+Employee	EmployeeID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Employee	FirstName	　	Y	N	VARCHAR(30)	VARCHAR2(30)	VARCHAR(30)
+Employee	LastName	　	Y	N	VARCHAR(30)	VARCHAR2(30)	VARCHAR(30)
+Employee	EmployeeAddress	　	Y	N	VARCHAR(100)	VARCHAR2(100)	VARCHAR(100)
+Employee	EmployeeSalary	　	Y	N	DECIMAL	NUMBER	DECIMAL
+Employee	PositionID	FK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Employee	SkillsID	FK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Employee	DepartmentID	FK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Skills	SkillsID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Skills	SkillsName	　	Y	N	VARCHAR(50)	VARCHAR2(50)	VARCHAR(50)
+Product	ProductID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Product	ProductName	　	Y	N	VARCHAR(50)	VARCHAR2(50)	VARCHAR(50)
+Position	PositionID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Position	PositionName	　	Y	N	VARCHAR(50)	VARCHAR2(50)	VARCHAR(50)
+Department	DepartmentID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Department	DepartmentName	　	Y	N	VARCHAR(50)	VARCHAR2(50)	VARCHAR(50)
+Purchase	PurchaseID	PK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Purchase	EmployeeID	FK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Purchase	CustomerName	　	N	N	VARCHAR(100)	VARCHAR2(100)	VARCHAR(100)
+Purchase	ProductID	FK	Y	N	VARCHAR(10)	VARCHAR2(10)	VARCHAR(10)
+Purchase	PurchasePrice	　	Y	N	DECIMAL	NUMBER	DECIMAL
+Purchase	PurchaseDate	　	Y	N	Date	Date	Date
+Purchase	DeliveryDate	　	Y	N	Date	Date	Date
+Purchase	ProductInventory	　	Y	N	INT	NUMBER	INT
+
