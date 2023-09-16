@@ -1,0 +1,235 @@
+Report Query
+
+Employee Salary Report 
+create table tax query
+CREATE TABLE TAX (
+Province VARCHAR(2) PRIMARY KEY,
+TaxRate DECIMAL(5, 2) NOT NULL
+);
+
+
+add data to table tax query
+INSERT INTO TAX(Province, TaxRate) 
+VALUES
+(‘AB’, 0.05), (‘BC’,0.12), (‘MB’, 0.08), (‘BC’,0.12), (‘NB’, 0.14), (‘ON’, 0.13), (‘SK’,0.11);
+SELECT 
+CONCAT (Employee.FirstName, ' ', Employee.LastName) AS EmployeeName
+Employee.Salary,
+
+
+salary report query
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    e.EmployeeSalary,
+    e.EmployeeAddress,
+    d.DepartmentName,
+    t.TaxRate,
+    (e.EmployeeSalary / 365) * DATEDIFF(CURRENT_DATE, '2023-01-01') AS TotalPaid,
+    ((e.EmployeeSalary / 365) * DATEDIFF(CURRENT_DATE, '2023-01-01')) * t.TaxRate AS TotalTax
+FROM 
+    Employee e
+JOIN 
+    Department d ON e.DepartmentID = d.DepartmentID
+JOIN 
+TAX t ON SUBSTRING_INDEX(SUBSTRING_INDEX(Address, ', ', -1), ' ', 1) = t.Province;
+
+Differences in SQL:
+SQL Server uses the GETDATE() function instead of CURRENT_DATE to get the current date. 
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    e.EmployeeSalary,
+    e.EmployeeAddress,
+    d.DepartmentName,
+    t.TaxRate,
+    (e.EmployeeSalary / 365) * DATEDIFF(DAY, '2023-01-01', GETDATE()) AS TotalPaid,
+    ((e.EmployeeSalary / 365) * DATEDIFF(DAY, '2023-01-01', GETDATE())) * t.TaxRate AS TotalTax
+FROM 
+    Employee e
+JOIN 
+    Department d ON e.DepartmentID = d.DepartmentID
+JOIN 
+    TAX t ON SUBSTRING(RIGHT(Address, CHARINDEX(', ', REVERSE(Address)) - 1), 1, 2) = t.Province;
+
+Differences in Oracle:
+Oracle uses SYSDATE for the current date. 
+Oracle uses SUBSTR instead of SUBSTRING
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    e.EmployeeSalary,
+    e.EmployeeAddress,
+    d.DepartmentName,
+    t.TaxRate,
+    (e.EmployeeSalary / 365) * (SYSDATE - TO_DATE('2023-01-01', 'YYYY-MM-DD')) AS TotalPaid,
+    ((e.EmployeeSalary / 365) * (SYSDATE - TO_DATE('2023-01-01', 'YYYY-MM-DD'))) * t.TaxRate AS TotalTax
+FROM 
+    Employee e
+JOIN 
+    Department d ON e.DepartmentID = d.DepartmentID
+JOIN 
+TAX t ON SUBSTR(SUBSTR(Address, INSTR(Address, ', ', -1) + 2), 1, 2) = t.Province;
+
+Differences in MySQL:
+MySQL uses CURDATE() for the current date.
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    e.EmployeeSalary,
+    e.EmployeeAddress,
+    d.DepartmentName,
+    t.TaxRate,
+    (e.EmployeeSalary / 365) * DATEDIFF(CURDATE(), '2023-01-01') AS TotalPaid,
+    ((e.EmployeeSalary / 365) * DATEDIFF(CURDATE(), '2023-01-01')) * t.TaxRate AS TotalTax
+FROM 
+    Employee e
+JOIN 
+    Department d ON e.DepartmentID = d.DepartmentID
+JOIN 
+    TAX t ON SUBSTRING_INDEX(SUBSTRING_INDEX(Address, ', ', -1), ' ', 1) = t.Province;
+
+
+Employee is Customer Report:
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    p.ProductName AS ProductPurchased,
+    pr.PurchasePrice AS ProductCost,
+    SUM(pr.PurchasePrice) AS TotalPurchasedForAllProducts
+FROM 
+    Employee e
+JOIN 
+    Purchase pr ON e.EmployeeID = pr.EmployeeID
+JOIN 
+    Product p ON pr.ProductID = p.ProductID
+WHERE 
+    pr.CustomerName IS NULL OR pr.CustomerName = CONCAT(e.FirstName, ' ', e.LastName)
+GROUP BY 
+e.EmployeeID, p.ProductID;
+
+Difference in SQL:
+It require additional handling for NULL concatenation using ISNULL().
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    p.ProductName AS ProductPurchased,
+    pr.PurchasePrice AS ProductCost,
+    SUM(pr.PurchasePrice) AS TotalPurchasedForAllProducts
+FROM 
+    Employee e
+JOIN 
+    Purchase pr ON e.EmployeeID = pr.EmployeeID
+JOIN 
+    Product p ON pr.ProductID = p.ProductID
+WHERE 
+    pr.CustomerName IS NULL OR pr.CustomerName = ISNULL(CONCAT(e.FirstName, ' ', e.LastName), '')
+GROUP BY 
+e.EmployeeID, p.ProductID;
+
+
+Difference in Oracle:
+Oracle requires using NVL() for handling NULL concatenation.
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    p.ProductName AS ProductPurchased,
+    pr.PurchasePrice AS ProductCost,
+    SUM(pr.PurchasePrice) AS TotalPurchasedForAllProducts
+FROM 
+    Employee e
+JOIN 
+    Purchase pr ON e.EmployeeID = pr.EmployeeID
+JOIN 
+    Product p ON pr.ProductID = p.ProductID
+WHERE 
+    pr.CustomerName IS NULL OR pr.CustomerName = NVL(CONCAT(e.FirstName, ' ', e.LastName), '')
+GROUP BY 
+e.EmployeeID, p.ProductID;
+
+Difference in MySQL:
+MySQL uses CONCAT() and the WHERE condition in a similar way. The date functions and handling of NULL concatenation should be consistent.
+SELECT 
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+    p.ProductName AS ProductPurchased,
+    pr.PurchasePrice AS ProductCost,
+    SUM(pr.PurchasePrice) AS TotalPurchasedForAllProducts
+FROM 
+    Employee e
+JOIN 
+    Purchase pr ON e.EmployeeID = pr.EmployeeID
+JOIN 
+    Product p ON pr.ProductID = p.ProductID
+WHERE 
+    pr.CustomerName IS NULL OR pr.CustomerName = CONCAT(e.FirstName, ' ', e.LastName)
+GROUP BY 
+    e.EmployeeID, p.ProductID;
+
+
+Last Year Monthly Purchases Report
+SELECT
+    p.ProductName,
+SUBSTRING_INDEX(SUBSTRING_INDEX(e.EmployeeAddress, ',', -1), ' ', 1) AS Province,
+    COALESCE(JanTotal, 0) AS JanTotal,
+    COALESCE(FebTotal, 0) AS FebTotal,
+    COALESCE(MarTotal, 0) AS MarTotal,
+    COALESCE(AprTotal, 0) AS AprTotal,
+    COALESCE(MayTotal, 0) AS MayTotal,
+    COALESCE(JunTotal, 0) AS JunTotal,
+    COALESCE(JulTotal, 0) AS JulTotal,
+    COALESCE(AugTotal, 0) AS AugTotal,
+    COALESCE(SepTotal, 0) AS SepTotal,
+    COALESCE(OctTotal, 0) AS OctTotal,
+    COALESCE(NovTotal, 0) AS NovTotal,
+    COALESCE(DecTotal, 0) AS DecTotal,
+    COALESCE(TotalSales, 0) AS TotalSalesForAllProducts
+FROM Product p
+LEFT JOIN (
+    SELECT DISTINCT SUBSTRING_INDEX(SUBSTRING_INDEX(EmployeeAddress, ',', -1), ' ', 1) AS Province
+    FROM Employee
+) t
+LEFT JOIN (
+    SELECT
+        ProductID,
+        SUBSTRING_INDEX(SUBSTRING_INDEX(EmployeeAddress, ',', -1), ' ', 1) AS Province,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 1 THEN PurchasePrice ELSE 0 END) AS JanTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 2 THEN PurchasePrice ELSE 0 END) AS FebTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 3 THEN PurchasePrice ELSE 0 END) AS MarTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 4 THEN PurchasePrice ELSE 0 END) AS AprTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 5 THEN PurchasePrice ELSE 0 END) AS MayTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 6 THEN PurchasePrice ELSE 0 END) AS JunTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 7 THEN PurchasePrice ELSE 0 END) AS JulTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 8 THEN PurchasePrice ELSE 0 END) AS AugTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 9 THEN PurchasePrice ELSE 0 END) AS SepTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 10 THEN PurchasePrice ELSE 0 END) AS OctTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 11 THEN PurchasePrice ELSE 0 END) AS NovTotal,
+        SUM(CASE WHEN MONTH(PurchaseDate) = 12 THEN PurchasePrice ELSE 0 END) AS DecTotal,
+        SUM(PurchasePrice) AS TotalSales
+    FROM Purchase
+    WHERE YEAR(PurchaseDate) = YEAR(CURRENT_DATE)
+    GROUP BY ProductID, Province
+) monthly ON p.ProductID = monthly.ProductID AND t.Province = monthly.Province
+ORDER BY p.ProductName, t.Province;
+
+Difference in SQL:
+SQL Server may require using GETDATE() instead of CURRENT_DATE to get the current date.
+
+Difference in Oracle:
+Oracle uses SYSDATE instead of CURRENT_DATE to get the current date.
+
+Difference in MySQL:
+MySQL uses CURDATE() for the current date.
+
+
+Competency Tracking Report
+
+SELECT
+    s.SkillsName AS Skill,
+    COUNT(*) AS NumEmployees
+FROM Skills s
+JOIN Employee e ON s.SkillsID = e.SkillsID
+GROUP BY s.SkillsName
+ORDER BY s.SkillsName;
+
+Difference in SQL:
+For SQL Server, Oracle, and MySQL, the basic structure of the query should remain the same.
+
+Difference in Oracle:
+For SQL Server, Oracle, and MySQL, the basic structure of the query should remain the same.
+
+Difference in MySQL:
+For SQL Server, Oracle, and MySQL, the basic structure of the query should remain the same.
+
